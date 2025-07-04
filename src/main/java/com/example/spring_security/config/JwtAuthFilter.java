@@ -1,5 +1,6 @@
 package com.example.spring_security.config;
 
+import com.example.spring_security.dao.UserDao;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -21,7 +21,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final UserDetailsService userDetailsService;
+    private final UserDao userDao;
     private final JwtUtil jwtUtil;
 
 
@@ -33,8 +33,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         //extracting the data from the header
         final String authHeader = request.getHeader(AUTHORIZATION);
-        final String jwtToken = authHeader.substring(7);
-        final String userEmail = jwtUtil.extractUsername(jwtToken);
 
         //check if the header isn't provided or it is a bad header
         //then applying the filter to skip this request
@@ -42,10 +40,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request,response);
             return;
         }
+        final String jwtToken = authHeader.substring(7);
+        final String userEmail = jwtUtil.extractUsername(jwtToken);
 
         //check if user email exists and there is no authentication yet
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+            UserDetails userDetails = userDao.findUserByEmail(userEmail);
             //check if token is valid
             if(jwtUtil.isTokenValid(jwtToken, userDetails)){
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
