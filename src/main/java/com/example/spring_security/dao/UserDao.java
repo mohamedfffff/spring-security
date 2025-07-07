@@ -4,6 +4,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
@@ -13,7 +14,9 @@ import java.util.List;
 @Repository
 public class UserDao {
 
-    private final static String password = "sldkjf"
+    static BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    static String  encoded = encoder.encode("password");
+    private final static String password = encoded;
     //creating a static list of users to use in auth without database
     private final static List<UserDetails> APPLICATION_USERS = Arrays.asList(
             new User(

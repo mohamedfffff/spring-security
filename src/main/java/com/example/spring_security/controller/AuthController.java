@@ -25,8 +25,6 @@ public class AuthController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<String> authenticate(@RequestBody AuthenticationRequest request){
-        System.out.println("email : "+request.getEmail());
-        System.out.println("pasword : "+request.getPassword());
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
@@ -36,7 +34,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
         UserDetails user = userDao.findUserByEmail(request.getEmail());
-        System.out.println("test1");
         if(user != null){
             return ResponseEntity.ok(jwtUtil.generateToken(request.getEmail()));
         }
